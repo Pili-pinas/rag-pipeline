@@ -1,4 +1,4 @@
-# Philippine Politician LLM Project Plan
+                                # Philippine Politician LLM Project Plan
 ## Document Summarization & Analysis System
 
 **Project Goal:** Build a RAG (Retrieval-Augmented Generation) system to summarize Philippine government documents, laws, and politician achievements/issues.

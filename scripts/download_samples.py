@@ -1,4 +1,4 @@
-"""Download sample documents from the Philippine Official Gazette."""
+"""Download sample Philippine law documents from lawphil.net."""
 
 import json
 import time
@@ -10,109 +10,105 @@ from bs4 import BeautifulSoup
 DATA_DIR = Path(__file__).parent.parent / "data" / "raw"
 METADATA_FILE = Path(__file__).parent.parent / "data" / "metadata.json"
 
-# Curated list of Official Gazette pages (laws, executive orders, proclamations)
+# Curated list of Philippine laws from lawphil.net
 SAMPLE_URLS = [
     {
-        "url": "https://www.officialgazette.gov.ph/2012/09/12/republic-act-no-10175/",
+        "url": "https://lawphil.net/statutes/repacts/ra2012/ra_10175_2012.html",
         "title": "Republic Act No. 10175 - Cybercrime Prevention Act of 2012",
         "type": "law",
         "date": "2012-09-12",
     },
     {
-        "url": "https://www.officialgazette.gov.ph/2013/05/15/republic-act-no-10591/",
+        "url": "https://lawphil.net/statutes/repacts/ra2013/ra_10591_2013.html",
         "title": "Republic Act No. 10591 - Comprehensive Firearms and Ammunition Regulation Act",
         "type": "law",
         "date": "2013-05-15",
     },
     {
-        "url": "https://www.officialgazette.gov.ph/2012/12/19/republic-act-no-10354/",
+        "url": "https://lawphil.net/statutes/repacts/ra2012/ra_10354_2012.html",
         "title": "Republic Act No. 10354 - Responsible Parenthood and Reproductive Health Act",
         "type": "law",
         "date": "2012-12-19",
     },
     {
-        "url": "https://www.officialgazette.gov.ph/2013/03/29/republic-act-no-10533/",
+        "url": "https://lawphil.net/statutes/repacts/ra2013/ra_10533_2013.html",
         "title": "Republic Act No. 10533 - Enhanced Basic Education Act (K-12)",
         "type": "law",
         "date": "2013-03-29",
     },
     {
-        "url": "https://www.officialgazette.gov.ph/2019/02/14/republic-act-no-11232/",
+        "url": "https://lawphil.net/statutes/repacts/ra2019/ra_11232_2019.html",
         "title": "Republic Act No. 11232 - Revised Corporation Code of the Philippines",
         "type": "law",
         "date": "2019-02-14",
     },
     {
-        "url": "https://www.officialgazette.gov.ph/2018/01/05/republic-act-no-10963/",
+        "url": "https://lawphil.net/statutes/repacts/ra2017/ra_10963_2017.html",
         "title": "Republic Act No. 10963 - TRAIN Law (Tax Reform for Acceleration and Inclusion)",
         "type": "law",
         "date": "2018-01-05",
     },
     {
-        "url": "https://www.officialgazette.gov.ph/2019/07/26/republic-act-no-11313/",
+        "url": "https://lawphil.net/statutes/repacts/ra2019/ra_11313_2019.html",
         "title": "Republic Act No. 11313 - Safe Spaces Act (Bawal Bastos Law)",
         "type": "law",
         "date": "2019-07-26",
     },
     {
-        "url": "https://www.officialgazette.gov.ph/2013/02/15/republic-act-no-10368/",
+        "url": "https://lawphil.net/statutes/repacts/ra2013/ra_10368_2013.html",
         "title": "Republic Act No. 10368 - Human Rights Victims Reparation and Recognition Act",
         "type": "law",
         "date": "2013-02-15",
     },
     {
-        "url": "https://www.officialgazette.gov.ph/2019/01/11/republic-act-no-11223/",
+        "url": "https://lawphil.net/statutes/repacts/ra2019/ra_11223_2019.html",
         "title": "Republic Act No. 11223 - Universal Health Care Act",
         "type": "law",
         "date": "2019-01-11",
     },
     {
-        "url": "https://www.officialgazette.gov.ph/2022/12/06/republic-act-no-11934/",
+        "url": "https://lawphil.net/statutes/repacts/ra2022/ra_11934_2022.html",
         "title": "Republic Act No. 11934 - SIM Registration Act",
         "type": "law",
         "date": "2022-12-06",
     },
     {
-        "url": "https://www.officialgazette.gov.ph/2012/08/22/republic-act-no-10173/",
+        "url": "https://lawphil.net/statutes/repacts/ra2012/ra_10173_2012.html",
         "title": "Republic Act No. 10173 - Data Privacy Act of 2012",
         "type": "law",
         "date": "2012-08-22",
     },
     {
-        "url": "https://www.officialgazette.gov.ph/2017/05/23/republic-act-no-10928/",
+        "url": "https://lawphil.net/statutes/repacts/ra2017/ra_10928_2017.html",
         "title": "Republic Act No. 10928 - Free Irrigation Service Act",
         "type": "law",
         "date": "2017-05-23",
     },
     {
-        "url": "https://www.officialgazette.gov.ph/2016/07/21/republic-act-no-10844/",
+        "url": "https://lawphil.net/statutes/repacts/ra2016/ra_10844_2016.html",
         "title": "Republic Act No. 10844 - Department of Information and Communications Technology Act",
         "type": "law",
         "date": "2016-07-21",
     },
     {
-        "url": "https://www.officialgazette.gov.ph/2018/07/26/republic-act-no-11058/",
+        "url": "https://lawphil.net/statutes/repacts/ra2018/ra_11058_2018.html",
         "title": "Republic Act No. 11058 - Occupational Safety and Health Standards Act",
         "type": "law",
         "date": "2018-07-26",
     },
     {
-        "url": "https://www.officialgazette.gov.ph/2019/08/08/republic-act-no-11332/",
+        "url": "https://lawphil.net/statutes/repacts/ra2019/ra_11332_2019.html",
         "title": "Republic Act No. 11332 - Mandatory Reporting of Notifiable Diseases Act",
         "type": "law",
         "date": "2019-08-08",
     },
 ]
 
-HEADERS = {
-    "User-Agent": "PH-Politician-RAG/0.1 (Research Project; github.com)"
-}
-
 
 def extract_text(url: str) -> str | None:
     """Fetch a page and extract its main text content."""
     try:
-        response = requests.get(url, headers=HEADERS, timeout=30)
+        response = requests.get(url, timeout=30)
         response.raise_for_status()
     except requests.RequestException as e:
         print(f"  Failed to fetch {url}: {e}")
@@ -120,11 +116,8 @@ def extract_text(url: str) -> str | None:
 
     soup = BeautifulSoup(response.text, "html.parser")
 
-    # Official Gazette uses .entry-content for the main body
-    content = soup.find("div", class_="entry-content")
-    if not content:
-        # Fallback: try article tag or main content area
-        content = soup.find("article") or soup.find("main")
+    # lawphil.net uses <body> with the full law text
+    content = soup.find("body")
     if not content:
         print(f"  No content found at {url}")
         return None
@@ -148,7 +141,7 @@ def main():
     downloaded = 0
     skipped = 0
 
-    print(f"Downloading {len(SAMPLE_URLS)} sample documents from Official Gazette...\n")
+    print(f"Downloading {len(SAMPLE_URLS)} sample documents from lawphil.net...\n")
 
     for i, entry in enumerate(SAMPLE_URLS):
         print(f"[{i + 1}/{len(SAMPLE_URLS)}] {entry['title']}")
@@ -168,7 +161,7 @@ def main():
             {
                 "filename": filename,
                 "title": entry["title"],
-                "source": "Official Gazette",
+                "source": "lawphil.net",
                 "url": entry["url"],
                 "type": entry["type"],
                 "date": entry["date"],

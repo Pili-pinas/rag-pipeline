@@ -1,10 +1,4 @@
 {
-  "functions": {
-    "api/index.py": {
-      "maxDuration": 60,
-      "excludeFiles": "{scripts/**,data/**,.env,.env.example,Dockerfile,Procfile}"
-    }
-  },
   "rewrites": [
     { "source": "/(.*)", "destination": "/api/index" }
   ]

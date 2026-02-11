@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "src/api/main.py": {
+      "maxDuration": 60,
+      "excludeFiles": "{scripts/**,data/**,.env,.env.example,Dockerfile,Procfile}"
+    }
+  }
+}
